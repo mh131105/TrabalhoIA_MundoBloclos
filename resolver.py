@@ -1,6 +1,5 @@
 """SAT real (MiniSat22 via PySAT); enumera horizontes e salva os artefatos."""
 import argparse
-import json
 from pathlib import Path
 from pysat.solvers import Minisat22
 from cenarios import FIGURAS, METAS
@@ -20,15 +19,14 @@ def solve(initial, goal, directory, result_name, max_horizon=14):
                         'variaveis': len(encoding.ids), 'clausulas': len(encoding.clauses)})
         print(f'{directory.name}: T={horizon} {history[-1]["status"]}', flush=True)
         directory.mkdir(parents=True, exist_ok=True)
-        (directory / 'horizontes.json').write_text(json.dumps(history, indent=2) + '\n')
         if sat:
             encoding.write(directory)
             result = directory / result_name
             result.write_text('SAT\n' + ' '.join(map(str, model)) + ' 0\n')
-            (directory / 'plano.txt').write_text(interpret(
-                result, directory / 'trab01_blocos2SAT.map', directory / 'trab01_blocos2SAT.cnf'), encoding='utf-8')
+            print(interpret(result, directory / 'trab01_blocos2SAT.map',
+                            directory / 'trab01_blocos2SAT.cnf'), end='')
             return history
-    raise RuntimeError(f'nenhum plano até T={max_horizon}; consulte horizontes.json')
+    raise RuntimeError(f'nenhum plano até T={max_horizon}')
 
 
 def main():
@@ -49,7 +47,7 @@ def main():
                 parser.error(f'meta inexistente: {goal}')
             folder = args.saida / f'cenario{i}'
             if goal != METAS[i]:
-                folder = folder / goal
+                folder /= goal
             solve(FIGURAS[i]['S0'], FIGURAS[i][goal], folder,
                   f'resultado{i}.txt', args.max_horizonte)
 

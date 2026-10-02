@@ -4,11 +4,11 @@ Inclui formalização em LPO, efeitos e persistência, análise de ordem parcial
 
 ## Entrega
 
-O conteúdo completo está em [TrabalhoIA_MundoBloclos_equipe_20](TrabalhoIA_MundoBloclos_equipe_20). Equipe 20.
+Equipe 20. Código, documentação e relatório ficam na raiz; os nove arquivos de saída exigidos ficam em `resultados/cenario1`, `cenario2` e `cenario3`.
 
-- [Relatório PDF](TrabalhoIA_MundoBloclos_equipe_20/relatorio.pdf)
-- [Fonte LaTeX](TrabalhoIA_MundoBloclos_equipe_20/relatorio.tex), pronta para compilar no Overleaf
-- [Resultados e modelos](TrabalhoIA_MundoBloclos_equipe_20/resultados)
+- [Relatório PDF](relatorio.pdf)
+- [Fonte LaTeX](relatorio.tex), pronta para compilar no Overleaf
+- [Resultados e modelos](resultados)
 
 ## Integrantes
 
@@ -23,6 +23,16 @@ O conteúdo completo está em [TrabalhoIA_MundoBloclos_equipe_20](TrabalhoIA_Mun
 Blocos `a,b,c,d` têm comprimentos `1,1,2,3`. A mesa tem seis slots `0..5`, delimitados pelos pontos `0..6`; níveis `0..3`. Cada bloco acima da mesa requer pelo menos `ceil(comprimento/2)` slots apoiados. Não há colisões no mesmo nível. O bloco movido deve estar livre de qualquer peça acima de seu span. A coluna de chegada precisa estar livre, portanto não é permitido inserir sob pontes.
 
 O destino exige apenas seu **span local livre**, pois exigir o apoio inteiro livre impossibilitaria `a` e `b` lado a lado sobre `c`. O exemplo do manual que leva `a` à mesa no ponto 4 e depois `d` à mesa no ponto 2 colide; a solução corrigida coloca `a` temporariamente sobre `b` no ponto 5. Essas escolhas afetam o domínio e a minimalidade informada.
+
+## Conferência da contribuição do grupo
+
+A seção **Resolução Manual** abaixo foi reinserida pelo grupo e está preservada integralmente. Ela não deve ser confundida com os planos de referência validados do relatório ou com os modelos produzidos pelo SAT.
+
+- **Concordam:** estados inicial/finais, regra de apoio, plano de Sf4 (4 ações), Situação 2 (5 ações) e Situação 3 (6 ações; S5 = S6).
+- **Precisam de ressalva:** em Sf3 e Sf1, o passo 2 `move(a, T, 2)` insere `a` sob a extremidade de `d`; em Sf2, o passo 3 `move(a, T, 0)` também insere `a` sob `d`. Essas ações são rejeitadas pela regra de coluna livre implementada e explicitada no relatório.
+- Os planos originais de Sf1/Sf2/Sf3 têm 8/9/2 ações; as referências validadas do relatório têm 9/11/10 e os mínimos SAT são 9/10/10, respectivamente. Os planos curtos preservados abaixo não são soluções válidas nesse modelo.
+
+A tabela **Resultados verificados** e a seção **Planos SAT extraídos** referem-se exclusivamente ao modelo implementado. O código não foi alterado para aceitar os movimentos conflitantes. A cadeia de ordem parcial original de Sf1 também contém o passo inválido; a independência entre as duas colocações finais de `a` e `b` sobre `d` permanece válida no plano corrigido.
 
 # Resolução Manual: Mundo dos Blocos de Tamanho Variável
 
@@ -165,18 +175,17 @@ Ligações causais entre as ações (A ≺ B significa que B depende do efeito d
 ## Execução reproduzível
 
 ```sh
-cd TrabalhoIA_MundoBloclos_equipe_20
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 python -m pip install -r requirements.txt
-python resolver.py --todos
+python resolver.py
 python testes.py
 python interpretar.py resultados/cenario1/resultado1.txt
 pdflatex -interaction=nonstopmode -halt-on-error relatorio.tex
 pdflatex -interaction=nonstopmode -halt-on-error relatorio.tex
 ```
 
-Python 3.10+ e `python-sat==1.8.dev24`. A busca começa em horizonte zero e salva o primeiro modelo SAT. Sem `--todos`, resolve apenas as metas principais: Situação 1/Sf4, Situação 2/S5, Situação 3/S7. Com `--todos`, também resolve os estados intermediários, sempre a partir do S0 da respectiva situação.
+Python 3.10+ e `python-sat==1.8.dev24`. A busca começa em horizonte zero e salva o primeiro modelo SAT. Sem `--todos`, resolve apenas as metas principais: Situação 1/Sf4, Situação 2/S5, Situação 3/S7. Os testes resolvem as 16 metas em diretórios temporários, sempre a partir do S0 da respectiva situação, sem exigir arquivos extras no repositório. Para gerar também essas instâncias opcionalmente: `python resolver.py --todos --saida /tmp/blocos-verificacao` (ou outra pasta temporária).
 
 Gerar apenas CNF/mapa para um horizonte escolhido:
 
@@ -198,7 +207,7 @@ Opcionalmente, com MiniSAT instalado à parte, `minisat exemplo/trab01_blocos2SA
 | `testes.py` | Regressões e mínimos por busca em largura |
 | `relatorio.tex` / `.pdf` | Formalização, planos, ordem parcial, execução e comparação |
 
-Cada cenário possui `trab01_blocos2SAT.cnf`, `trab01_blocos2SAT.map`, `resultadoN.txt`, `plano.txt` e `horizontes.json`. As três metas principais ficam diretamente em `resultados/cenarioN`; as demais, em subpastas pelo nome da meta. Não misture mapas ou modelos de instâncias diferentes.
+Cada cenário principal contém somente `trab01_blocos2SAT.cnf`, `trab01_blocos2SAT.map` e `resultadoN.txt`, em `resultados/cenarioN`. Assim, os nomes pedidos no enunciado são mantidos sem colisão. Planos interpretados e testes dos horizontes aparecem no terminal; não são gravados arquivos auxiliares. As metas adicionais, quando solicitadas, ficam em subpastas pelo nome da meta e não são versionadas. Não misture mapas ou modelos de instâncias diferentes.
 
 ## Resultados verificados
 
@@ -223,7 +232,7 @@ Cada cenário possui `trab01_blocos2SAT.cnf`, `trab01_blocos2SAT.map`, `resultad
 
 Todos os horizontes inferiores deram UNSAT. A busca em largura confirma os mínimos no mesmo domínio. `S5` e `S6` da Situação 3 são idênticos: a passagem não exige ação.
 
-Os planos de referência da seção formal foram elaborados e revisados com assistência de IA; não alegamos uma etapa manual independente realizada pelo aluno. A alternativa suplementar Sf3 foi auxiliada por busca. A geração SAT usa os estados inicial/final, sem fixar os planos de referência. O relatório distingue essas origens e mostra todos os passos.
+Os planos de referência da seção formal do relatório e de `cenarios.py` foram elaborados e revisados com assistência de IA; essa descrição de origem não se aplica à contribuição original do grupo preservada em **Resolução Manual**. A alternativa suplementar Sf3 foi auxiliada por busca. A geração SAT usa os estados inicial/final, sem fixar os planos de referência. O relatório distingue essas origens e mostra todos os passos.
 
 ### Planos SAT extraídos
 

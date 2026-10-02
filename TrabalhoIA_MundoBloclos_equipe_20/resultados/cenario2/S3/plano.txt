@@ -1,9 +1,0 @@
-PLANO ENCONTRADO (3 ações); CNF e simulação validadas.
-1. t=0: mover b para MESA, p=2
-2. t=1: mover a para b, p=2
-3. t=2: mover c para d, p=4
-S0: a=(0,1); b=(1,1); c=(0,0); d=(3,0)
-S1: a=(0,1); b=(2,0); c=(0,0); d=(3,0)
-S2: a=(2,1); b=(2,0); c=(0,0); d=(3,0)
-S3: a=(2,1); b=(2,0); c=(4,1); d=(3,0)
-Apoios finais: a sobre b; b sobre T; c sobre d; d sobre T

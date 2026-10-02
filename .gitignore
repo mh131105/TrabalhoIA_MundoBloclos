@@ -6,3 +6,6 @@ __pycache__/
 *.toc
 
 report_build/
+
+# Metas auxiliares opcionais; apenas as três saídas principais são versionadas.
+resultados/cenario*/S*/

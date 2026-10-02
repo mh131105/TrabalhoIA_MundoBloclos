@@ -2,11 +2,14 @@
 from collections import deque
 from pathlib import Path
 import tempfile
+import contextlib
+import io
 import unittest
 from pysat.solvers import Minisat22
-from cenarios import BLOCKS, FIGURAS, MANUAIS, Q, R, S0, SITUACAO1, SITUACAO2, SITUACAO3
+from cenarios import METAS, BLOCKS, FIGURAS, MANUAIS, Q, R, S0, SITUACAO1, SITUACAO2, SITUACAO3
 from dominio import valid_state, move, replay, successors, derive_on
 from bw2cnf_var import encode
+from resolver import solve
 from interpretar import check_cnf, decode, read_map, read_result, interpret
 
 
@@ -105,36 +108,40 @@ class Tests(unittest.TestCase):
             move(prefix, ('b', 'c', 5))
 
     def test_saved_models_and_bfs(self):
-        root = Path(__file__).parent / 'resultados'
+        # Todas as 16 instâncias são verificadas sem exigir saídas auxiliares no Git.
+        root = Path(__file__).parent
         for scenario, fig in FIGURAS.items():
             bfs = distances(fig['S0'])
             for goal, state in fig.items():
                 if goal == 'S0':
                     continue
-                from cenarios import METAS
-                folder = root / f'cenario{scenario}'
-                if goal != METAS[scenario]:
-                    folder /= goal
-                import json
-                history = json.loads((folder / 'horizontes.json').read_text())
                 minimum = bfs[key(state)]
-                self.assertEqual([x['horizonte'] for x in history], list(range(minimum + 1)))
-                self.assertEqual([x['status'] for x in history], ['UNSAT'] * minimum + ['SAT'])
-                text = interpret(folder / f'resultado{scenario}.txt',
-                                 folder / 'trab01_blocos2SAT.map', folder / 'trab01_blocos2SAT.cnf')
-                self.assertIn(f'({minimum} ações)', text)
-                mapping = read_map(folder / 'trab01_blocos2SAT.map')
-                _, trace = decode(mapping, read_result(folder / f'resultado{scenario}.txt'))
-                self.assertEqual(trace[0], fig['S0'])
-                self.assertEqual(trace[-1], state)
-                generated = encode(fig['S0'], state, minimum)
-                self.assertEqual(history[-1]['variaveis'], len(generated.ids))
-                self.assertEqual(history[-1]['clausulas'], len(generated.clauses))
                 with tempfile.TemporaryDirectory() as directory:
-                    generated.write(directory)
-                    for filename in ('trab01_blocos2SAT.cnf', 'trab01_blocos2SAT.map'):
-                        self.assertEqual((Path(directory) / filename).read_bytes(),
-                                         (folder / filename).read_bytes())
+                    folder = Path(directory)
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        history = solve(fig['S0'], state, folder, 'modelo.txt', minimum)
+                    self.assertEqual([x['horizonte'] for x in history], list(range(minimum + 1)))
+                    self.assertEqual([x['status'] for x in history], ['UNSAT'] * minimum + ['SAT'])
+                    text = interpret(folder / 'modelo.txt', folder / 'trab01_blocos2SAT.map',
+                                     folder / 'trab01_blocos2SAT.cnf')
+                    self.assertIn(f'({minimum} ações)', text)
+                    mapping = read_map(folder / 'trab01_blocos2SAT.map')
+                    _, trace = decode(mapping, read_result(folder / 'modelo.txt'))
+                    self.assertEqual(trace[0], fig['S0'])
+                    self.assertEqual(trace[-1], state)
+                    if goal == METAS[scenario]:
+                        saved_folder = root / 'resultados' / f'cenario{scenario}'
+                        stem = 'trab01_blocos2SAT'
+                        saved = interpret(saved_folder / f'resultado{scenario}.txt',
+                                          saved_folder / f'{stem}.map', saved_folder / f'{stem}.cnf')
+                        self.assertIn(f'({minimum} ações)', saved)
+                        _, saved_trace = decode(read_map(saved_folder / f'{stem}.map'),
+                                                read_result(saved_folder / f'resultado{scenario}.txt'))
+                        self.assertEqual(saved_trace[0], fig['S0'])
+                        self.assertEqual(saved_trace[-1], state)
+                        for ext in ('cnf', 'map'):
+                            self.assertEqual((folder / f'trab01_blocos2SAT.{ext}').read_bytes(),
+                                             (saved_folder / f'{stem}.{ext}').read_bytes())
 
     def test_corrupt_model_rejected(self):
         e = encode(S0, S0, 0)
