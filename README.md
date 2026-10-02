@@ -1,6 +1,6 @@
 # Mundo dos Blocos de Tamanho Variável
 
-Solução assistida por IA para o trabalho de Fundamentos de Inteligência Artificial (UFAM). Inclui formalização em LPO, efeitos e persistência, análise de ordem parcial, codificação CNF, modelos reais do MiniSat22, planos interpretados e relatório LaTeX/PDF.
+Inclui formalização em LPO, efeitos e persistência, análise de ordem parcial, codificação CNF, modelos reais do MiniSat22, planos interpretados e relatório LaTeX/PDF.
 
 ## Entrega
 
