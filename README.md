@@ -224,9 +224,3 @@ S5: a=(0,1); b=(1,1); c=(0,0); d=(2,0)
 S6: a=(0,1); b=(1,1); c=(0,0); d=(3,0)
 Apoios finais: a sobre c; b sobre c; c sobre T; d sobre T
 ```
-
-## Verificação e limites
-
-Oito testes passaram, cobrindo as figuras e planos de referência, colisões, pontes, chegada local, estabilidade, horizonte zero, ações legais/ilegais nos estados desenhados, linearizações parciais, 16 instâncias salvas, mínimos BFS, regeneração idêntica de CNF/mapas e rejeição de modelos corrompidos. O interpretador confere toda cláusula e toda transição de cada modelo.
-
-SATPlan produz planos sequenciais; a ordem parcial é analisada por vínculos causais e ameaças no relatório, com as duas ordens válidas de `a→d@4` e `b→d@5` em Sf1. Não é implementado um buscador POP levantado. Não há certificados DRAT de UNSAT. A estabilidade é discreta, não um modelo físico de centro de massa. A minimalidade vale apenas para as regras explicitadas, não para qualquer interpretação do enunciado.
