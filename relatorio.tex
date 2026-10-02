@@ -38,17 +38,16 @@
 \thispagestyle{empty}
 \textbf{Identificação da equipe.} Equipe 20.
 
-\textbf{Escopo.} A solução cobre as três situações do enunciado, inclusive os quatro estados finais alternativos da Situação 1. O relatório apresenta primeiro a representação formal e os planos manuais, depois sua tradução para CNF, execução e comparação com os resultados do resolvedor. A interpretação geométrica e as duas correções necessárias ao exemplo do manual ficam explícitas.
-
 \newpage
 \section{Introdução ao problema}
-O problema consiste em reposicionar quatro blocos de comprimentos diferentes em uma mesa com seis slots. Além da ordem de empilhamento, é necessário representar posições horizontais, níveis verticais, espaços vazios e apoio parcial. O bloco maior pode formar uma ponte, desde que tenha a quantidade de apoio exigida pelo manual.
-
-O enunciado pede representação em lógica de primeira ordem (LPO), ações com pré-condições e efeitos, planos manuais com ordem parcial, tradução para lógica proposicional em CNF, arquivos de entrada e de saída do SAT solver e comparação entre os planos~\cite{enunciado}. A estratégia adotada é SATPlan com horizonte limitado: para cada $H$, uma fórmula representa os estados $0,\ldots,H$ e uma ação em cada transição. O primeiro horizonte satisfatível fornece um plano de comprimento mínimo dentro do modelo declarado.
-
-O código e os planos de referência deste relatório foram preparados com auxílio de IA e conferidos por simulação geométrica e testes SAT. Essa descrição não atribui a mesma origem à contribuição ``Resolução Manual'' reinserida pelo grupo no README. Aquela contribuição foi preservada integralmente; a nota de conferência no README distingue os planos originais dos planos validados aqui. Sf4 e as Situações 2 e 3 concordam. Os planos curtos originais de Sf1, Sf2 e Sf3 permitem inserções sob pontes que este modelo rejeita; suas diferenças são explicitadas na seção de planos.
-
-As imagens foram lidas nas páginas efetivas 5, 6 e 7 do PDF do enunciado. A Situação 1 admite quatro metas alternativas. A Situação 2 leva de $S_0$ a $S_5$. A Situação 3 leva de $S_0$ a $S_7$. Os desenhos intermediários permitem conferir a execução manual. Na Situação 3, $S_5$ e $S_6$ têm exatamente as mesmas coordenadas; essa passagem tem zero ações.
+No Mundo dos Blocos clássico todos os blocos têm a mesma largura e só existem relações discretas do tipo ``x está sobre y''. Neste trabalho os blocos têm comprimentos diferentes e são colocados sobre uma mesa com posições horizontais discretas. Isso introduz fenômenos que a representação clássica não captura:
+\begin{itemize}
+\item espaços vazios entre blocos;
+\item movimentos laterais (mudar a posição horizontal sem mudar de nível);
+\item apoios múltiplos (um bloco longo em ponte sobre dois blocos curtos);
+\item equilíbrio: um bloco maior sobre um menor só é válido se tiver apoio suficiente.
+\end{itemize}
+O objetivo é, dados um estado inicial $S_0$ e um estado meta, encontrar uma sequência de ações (plano) que leve de um ao outro, respeitando uma ordem parcial entre sub-metas. Esta seção propõe a representação em Lógica de Primeira Ordem (LPO) que fundamenta a codificação proposicional posterior.
 
 \section{Descrição formal do mundo dos blocos de tamanho variável}
 \subsection{Objetos e geometria}
