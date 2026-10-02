@@ -352,7 +352,7 @@ Regressões e busca em largura & \texttt{testes.py}: figuras, movimentos, planos
 As funções geométricas não consultam cláusulas SAT. Essa segunda implementação permite detectar divergências entre a descrição de ações e a codificação. O mapa é específico de cada CNF; não deve ser trocado entre instâncias ou horizontes.
 
 \section{Execução passo a passo}
-Na raiz do repositório da Equipe 20, crie um ambiente e instale a dependência fixada:
+Na raiz do repositório, crie um ambiente e instale a dependência fixada:
 \begin{lstlisting}
 python3 -m venv .venv
 source .venv/bin/activate
@@ -377,12 +377,6 @@ minisat execucao/trab01_blocos2SAT.cnf execucao/resultado1.txt
 python interpretar.py execucao/resultado1.txt
 \end{lstlisting}
 O executável MiniSAT costuma retornar código 10 para SAT e 20 para UNSAT; isso não significa falha da resolução. O caminho padrão usa a biblioteca MiniSat22 e dispensa esse executável. O modelo salvo tem formato MiniSAT, com \texttt{SAT} e uma atribuição de inteiros terminada em zero.
-
-\textbf{LaTeX e Overleaf.} \texttt{relatorio.tex} é autocontido e não depende dos PDFs de referência nem de figuras externas. Compile duas vezes com pdfLaTeX. No Overleaf, importe esse arquivo e selecione-o como documento principal. O PDF entregue foi compilado e conferido visualmente.
-\begin{lstlisting}
-pdflatex -interaction=nonstopmode -halt-on-error relatorio.tex
-pdflatex -interaction=nonstopmode -halt-on-error relatorio.tex
-\end{lstlisting}
 
 \section{Interpretação da saída do SAT solver}
 \subsection{Decodificação e verificação}
