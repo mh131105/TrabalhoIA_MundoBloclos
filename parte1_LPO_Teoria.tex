@@ -1,0 +1,199 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazilian]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage[margin=2.5cm]{geometry}
+
+% --- macros ---
+\newcommand{\At}{\mathit{at}}
+\newcommand{\Lev}{\mathit{lev}}
+\newcommand{\Clr}{\mathit{clr}}
+\newcommand{\On}{\mathit{on}}
+\newcommand{\Cov}{\mathit{cov}}
+\newcommand{\Occ}{\mathit{occ}}
+\newcommand{\Ovl}{\mathit{ovl}}
+\newcommand{\Free}{\mathit{free}}
+\newcommand{\Stable}{\mathit{stable}}
+\newcommand{\Tl}{\mathit{tl}}
+\newcommand{\Len}{\mathit{len}}
+\newcommand{\Move}{\mathit{move}}
+\newcommand{\Poss}{\mathit{Poss}}
+\newcommand{\Do}{\mathit{do}}
+\newcommand{\Mesa}{\mathsf{T}}
+
+\title{Mundo dos Blocos de Tamanho Variável:\\Representação em Lógica de Primeira Ordem}
+\author{Equipe X --- Parte 1: LPO \& Teoria}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Introdução ao Problema}
+
+No Mundo dos Blocos clássico todos os blocos têm a mesma largura e só existem relações discretas do tipo \emph{``x está sobre y''}. Neste trabalho os blocos têm \textbf{comprimentos diferentes} e são colocados sobre uma mesa com posições horizontais discretas. Isso introduz fenômenos que a representação clássica não captura:
+\begin{itemize}
+  \item \textbf{espaços vazios} entre blocos;
+  \item \textbf{movimentos laterais} (mudar a posição horizontal sem mudar de nível);
+  \item \textbf{apoios múltiplos} (um bloco longo em ponte sobre dois blocos curtos);
+  \item \textbf{equilíbrio}: um bloco maior sobre um menor só é válido se tiver apoio suficiente.
+\end{itemize}
+O objetivo é, dados um estado inicial $S_0$ e um estado meta, encontrar uma sequência de ações (plano) que leve de um ao outro, respeitando uma \textbf{ordem parcial} entre sub-metas. Esta seção propõe a representação em Lógica de Primeira Ordem (LPO) que fundamenta a codificação proposicional posterior.
+
+\section{Descrição Formal em LPO}
+
+Adota-se o \emph{cálculo de situações}: uma situação $s$ é o estado do mundo, $S_0$ é a situação inicial e $\Do(\alpha,s)$ é a situação resultante de executar $\alpha$ em $s$.
+
+\subsection{Sortes e constantes}
+
+\begin{tabular}{@{}ll@{}}
+Blocos & $B=\{a,b,c,d\}$ \\
+Mesa & constante $\Mesa$; $Y = B\cup\{\Mesa\}$ (o que pode servir de base) \\
+Pontos & $X=\{0,1,\dots,6\}$ (extremidades); \emph{slots} $s_i=[i,i+1]$, $i\in\{0,\dots,5\}$ \\
+Níveis & $L=\{0,1,2,3\}$ ($0$ = mesa) \\
+Comprimento & função $\Len:B\to\{1,2,3\}$: $\Len(a)=\Len(b)=1$, $\Len(c)=2$, $\Len(d)=3$ \\
+\end{tabular}
+
+\medskip
+Usa-se aritmética inteira ($+,-,\le,<$). Valem os axiomas de nomes únicos e de fechamento de domínio.
+Um bloco $b$ com ponto inicial $p$ ocupa o intervalo $[p,p+\Len(b)]$, cobrindo os slots $p,\dots,p+\Len(b)-1$. Posições válidas: $0\le p\le 6-\Len(b)$.
+
+\subsection{Fluentes primitivos}
+
+\begin{center}
+\begin{tabular}{@{}lp{9.5cm}@{}}
+\toprule
+Fluente & Significado \\
+\midrule
+$\At(b,p,s)$ & o bloco $b$ começa no ponto $p$ na situação $s$ \\
+$\Lev(b,l,s)$ & o bloco $b$ está no nível $l$ na situação $s$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Apenas esses dois são primitivos. Todo o resto é \textbf{derivado}, o que evita redundância e elimina inconsistências entre fluentes (o mesmo critério do manual para $\On$).
+
+\subsection{Relações derivadas}
+
+\paragraph{Cobertura de slot.}
+\[
+\Cov(b,i,l,s)\;\equiv\;\exists p\,\big[\At(b,p,s)\wedge\Lev(b,l,s)\wedge p\le i\wedge i\le p+\Len(b)-1\big]
+\]
+
+\paragraph{Sobreposição de spans} (interseção de comprimento positivo):
+\[
+\Ovl(b,p,y,q)\;\equiv\; p<q+\Len(y)\;\wedge\; q<p+\Len(b)
+\]
+
+\paragraph{Apoio (\emph{on}).}
+\begin{align*}
+\On(b,\Mesa,s)&\equiv \Lev(b,0,s)\\
+\On(b,y,s)&\equiv \exists p,q,l\,[\,l>0\wedge \At(b,p,s)\wedge\At(y,q,s)\wedge\Lev(b,l,s)\wedge\Lev(y,l-1,s)\wedge\Ovl(b,p,y,q)\,]
+\end{align*}
+Um bloco pode ter vários apoios simultâneos (ponte): $\On(d,a,s)\wedge\On(d,b,s)$.
+
+\paragraph{Topo livre.}
+\[
+\Clr(y,s)\;\equiv\;\forall w\;\neg\On(w,y,s)
+\]
+A mesa nunca é considerada ocupada (sempre aceita blocos no nível 0).
+
+\paragraph{Slot ocupado e espaço livre.}
+\begin{align*}
+\Occ(i,l,b,s)&\equiv \exists b'\,[\,b'\neq b\wedge\Cov(b',i,l,s)\,]\\
+\Free(b,p,l,s)&\equiv \forall i\,[\,p\le i\le p+\Len(b)-1\rightarrow\neg\Occ(i,l,b,s)\,]
+\end{align*}
+
+\paragraph{Estabilidade (equilíbrio).}
+Um bloco no nível $l>0$ exige que pelo menos $\lceil\Len(b)/2\rceil$ dos slots sob seu span estejam ocupados no nível $l-1$:
+\[
+\Stable(b,p,l,s)\;\equiv\; l=0\;\vee\;\sum_{i=p}^{p+\Len(b)-1}[\Occ(i,l-1,b,s)]\;\ge\;\left\lceil\tfrac{\Len(b)}{2}\right\rceil
+\]
+onde $[\varphi]=1$ se $\varphi$ vale e $0$ caso contrário. Como o comprimento é limitado, isso é expansível em LPO pura. Sendo $o_k=\Occ(p+k,l-1,b,s)$:
+\begin{itemize}
+  \item $\Len(b)=1$: $o_0$;
+  \item $\Len(b)=2$: $o_0\vee o_1$;
+  \item $\Len(b)=3$: $(o_0\wedge o_1)\vee(o_0\wedge o_2)\vee(o_1\wedge o_2)$.
+\end{itemize}
+Assim, $d$ pode ficar em ponte sobre dois blocos unitários separados por um slot vazio ($o_0\wedge o_2$), mas não sobre um único bloco unitário.
+
+\paragraph{Nível-alvo.}
+\[
+\Tl(y,l',s)\;\equiv\;(y=\Mesa\wedge l'=0)\;\vee\;\exists l\,[\,y\in B\wedge\Lev(y,l,s)\wedge l'=l+1\,]
+\]
+
+\subsection{Restrições de estado (invariantes)}
+
+Valem em toda situação alcançável:
+\begin{enumerate}
+  \item \textbf{Unicidade de posição:} $\At(b,p,s)\wedge\At(b,p',s)\rightarrow p=p'$, e todo bloco tem alguma posição válida.
+  \item \textbf{Unicidade de nível:} $\Lev(b,l,s)\wedge\Lev(b,l',s)\rightarrow l=l'$, com $l\le 3$.
+  \item \textbf{Exclusão horizontal:} dois blocos distintos no mesmo nível não cobrem o mesmo slot:
+  $\Cov(b,i,l,s)\wedge\Cov(b',i,l,s)\rightarrow b=b'$.
+  \item \textbf{Estabilidade:} $\At(b,p,s)\wedge\Lev(b,l,s)\rightarrow\Stable(b,p,l,s)$.
+\end{enumerate}
+
+\subsection{Ação \texorpdfstring{$\Move(b,y,p)$}{move(b,y,p)}}
+
+Significado: \emph{``mover o bloco $b$ para cima de $y$ (bloco ou mesa), começando no ponto $p$''}. É qualitativa: o nível é determinado por $y$, não informado.
+
+\paragraph{Axioma de possibilidade.}
+\begin{align*}
+\Poss(\Move(b,y,p),s)\;\equiv\;&\; b\ne y\;\wedge\;0\le p\le 6-\Len(b)\;\wedge\;\Clr(b,s)\;\wedge\;(y\in B\rightarrow\Clr(y,s))\\
+&\wedge\;\exists l'\,\big[\Tl(y,l',s)\wedge l'\le 3\\
+&\qquad\wedge\neg(\At(b,p,s)\wedge\Lev(b,l',s))\\
+&\qquad\wedge\,(y\in B\rightarrow\exists q\,[\At(y,q,s)\wedge\Ovl(b,p,y,q)])\\
+&\qquad\wedge\Free(b,p,l',s)\wedge\Stable(b,p,l',s)\big]
+\end{align*}
+Cada linha corresponde a uma pré-condição do manual: topo de $b$ livre; topo de $y$ livre; não é ação nula; spans sobrepostos; slots-alvo livres; estabilidade.
+Como $\Clr(b,s)$ é exigido, retirar $b$ nunca desestabiliza outro bloco (nada repousa sobre $b$).
+
+\subsection{Efeitos da ação: adds e deletes}
+
+Seja $(p_0,l_0)$ a posição e o nível de $b$ antes da ação, e $l'$ o nível-alvo.
+
+\begin{center}
+\begin{tabular}{@{}p{2.4cm}p{5.2cm}p{5.6cm}@{}}
+\toprule
+Elemento & Adiciona (\emph{add}) & Remove (\emph{delete}) \\
+\midrule
+$\At$ & $\At(b,p,\Do(\cdot))$ & $\At(b,p_0,\cdot)$ \\
+$\Lev$ & $\Lev(b,l',\Do(\cdot))$ & $\Lev(b,l_0,\cdot)$ \\
+$\Clr$ (derivado) & $\Clr(z)$ para cada $z$ que era apoio de $b$ e não sustenta mais nenhum bloco & $\Clr(z)$ para \emph{todo} $z$ no nível $l'-1$ cujo span sobrepõe o de $b$ na nova posição \\
+$\On$ (derivado) & $\On(b,z)$ para todo $z$ sob $b$ na nova posição & $\On(b,z)$ para os apoios antigos \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent\textbf{Observação.} Como $\Clr$ e $\On$ são derivados de $\At$ e $\Lev$, os únicos efeitos primitivos são os de $\At$ e $\Lev$; as linhas de $\Clr$ e $\On$ são consequências. O delete de $\Clr$ vale para \emph{todos} os apoios, não só para $y$: ao colocar $d$ em ponte sobre $a$ e $b$, ambos deixam de estar livres.
+
+\paragraph{Axiomas de estado sucessor.}
+\begin{align*}
+\At(x,q,\Do(\Move(b,y,p),s))&\leftrightarrow (x=b\wedge q=p)\;\vee\;(\At(x,q,s)\wedge x\ne b)\\
+\Lev(x,m,\Do(\Move(b,y,p),s))&\leftrightarrow (x=b\wedge\Tl(y,m,s))\;\vee\;(\Lev(x,m,s)\wedge x\ne b)
+\end{align*}
+Os blocos diferentes de $b$ não mudam de posição nem de nível (axioma de moldura).
+
+\subsection{Ordem parcial}
+
+\paragraph{Ordem entre metas.}
+Seja $G=\{\varphi_1,\dots,\varphi_n\}$ o conjunto de literais-meta (por exemplo $\At(a,0,s)\wedge\Lev(a,1,s)$). Uma \textbf{ordem parcial} $\prec_P$ sobre $G$ é uma relação irreflexiva e transitiva. Escrevemos $\varphi_1\prec_P\varphi_2$ para dizer que $\varphi_1$ deve ter sido alcançada antes de $\varphi_2$:
+\[
+\varphi_1\prec_P\varphi_2\;\Rightarrow\;\forall s''\sqsubseteq s\,[\,\varphi_2(s'')\rightarrow\exists s'\sqsubseteq s''\;\varphi_1(s')\,]
+\]
+onde $s'\sqsubseteq s$ indica que $s'$ é uma situação anterior ou igual a $s$ no mesmo histórico. Esta é exatamente a restrição do manual (``para todo $t$: $\neg\varphi_2(t)\vee\varphi_1(t')$ para algum $t'\le t$''). Metas sem relação em $\prec_P$ podem ser alcançadas em qualquer ordem.
+
+\paragraph{Problema de planejamento.}
+Encontrar $\alpha_1,\dots,\alpha_k$ com $\Poss$ válido em cada passo, tal que $s_f=\Do([\alpha_1,\dots,\alpha_k],S_0)$ satisfaz todos os $\varphi_i\in G$ e todas as restrições de $\prec_P$ valem ao longo do histórico. O plano resultante é parcialmente ordenado quando suas ações só são ordenadas por vínculos causais ($\alpha_i$ produz uma condição que $\alpha_j$ consome) e por ameaças a esses vínculos; qualquer linearização é um plano válido.
+
+\subsection{Exemplo: situação inicial \texorpdfstring{$S_0$}{S0} da Situação 1}
+
+\begin{align*}
+&\At(c,0,S_0)\wedge\Lev(c,0,S_0)\wedge\At(a,3,S_0)\wedge\Lev(a,0,S_0)\\
+&\At(b,5,S_0)\wedge\Lev(b,0,S_0)\wedge\At(d,3,S_0)\wedge\Lev(d,1,S_0)
+\end{align*}
+Relações derivadas: $\On(c,\Mesa)$, $\On(a,\Mesa)$, $\On(b,\Mesa)$, $\On(d,a)$, $\On(d,b)$; o slot $s_4$ está vazio sob $d$. Estabilidade de $d$: $o_0\wedge o_2$ vale (slots 3 e 5 ocupados), logo $2\ge\lceil 3/2\rceil=2$. Clr: $\Clr(c)$ e $\Clr(d)$ valem; $\neg\Clr(a)$, $\neg\Clr(b)$.
+
+\end{document}
