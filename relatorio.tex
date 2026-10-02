@@ -426,8 +426,6 @@ Passo & Ação & Passo & Ação\\\midrule
 \end{tabular}\end{center}
 Mover primeiro $c$ cria outra organização temporária; o plano evita passar pelo estado inicial da Situação 2 e economiza uma ação. As sequências completas e seus estados estão no README e podem ser reproduzidos no terminal pelo interpretador.
 
-\textbf{Verificação cruzada.} Os testes reexecutam referências, validam todas as figuras, rejeitam a colisão do manual e a inserção sob ponte, conferem modelos e mapas, testam as duas ordens de $u,v$ e comparam os 16 mínimos SAT com busca em largura no simulador. Também confrontam cada ação candidata, legal ou ilegal, nos estados desenhados, com o SAT de uma transição. Esses testes fortalecem a validação; não substituem a declaração das hipóteses geométricas.
-
 \textbf{Conclusão.} Posição, nível e ocupação por slots tornam explícitos o apoio parcial e o espaço local. Os três objetivos principais exigem 4, 5 e 6 movimentos no modelo adotado. A análise POP explica quais precedências são necessárias e identifica um par realmente permutável. A composição intuitiva de 11 ações para $S_{f2}$ é válida, mas o SAT encontra uma solução de dez. A otimalidade vale para o domínio discretizado e a movimentação por corredor livre; não é uma alegação sobre toda interpretação física possível dos desenhos.
 
 \begin{thebibliography}{9}
