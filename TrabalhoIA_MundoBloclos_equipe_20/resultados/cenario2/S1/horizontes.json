@@ -1,0 +1,14 @@
+[
+  {
+    "horizonte": 0,
+    "status": "UNSAT",
+    "variaveis": 149,
+    "clausulas": 1701
+  },
+  {
+    "horizonte": 1,
+    "status": "SAT",
+    "variaveis": 386,
+    "clausulas": 10702
+  }
+]

@@ -1,0 +1,7 @@
+PLANO ENCONTRADO (2 ações); CNF e simulação validadas.
+1. t=0: mover d para c, p=0
+2. t=1: mover a para b, p=5
+S0: a=(3,0); b=(5,0); c=(0,0); d=(3,1)
+S1: a=(3,0); b=(5,0); c=(0,0); d=(0,1)
+S2: a=(5,1); b=(5,0); c=(0,0); d=(0,1)
+Apoios finais: a sobre b; b sobre T; c sobre T; d sobre c

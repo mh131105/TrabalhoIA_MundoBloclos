@@ -1,0 +1,13 @@
+PLANO ENCONTRADO (5 ações); CNF e simulação validadas.
+1. t=0: mover b para d, p=3
+2. t=1: mover a para b, p=3
+3. t=2: mover c para d, p=4
+4. t=3: mover a para c, p=4
+5. t=4: mover b para c, p=5
+S0: a=(0,1); b=(1,1); c=(0,0); d=(3,0)
+S1: a=(0,1); b=(3,1); c=(0,0); d=(3,0)
+S2: a=(3,2); b=(3,1); c=(0,0); d=(3,0)
+S3: a=(3,2); b=(3,1); c=(4,1); d=(3,0)
+S4: a=(4,2); b=(3,1); c=(4,1); d=(3,0)
+S5: a=(4,2); b=(5,2); c=(4,1); d=(3,0)
+Apoios finais: a sobre c; b sobre c; c sobre d; d sobre T
