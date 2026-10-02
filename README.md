@@ -24,8 +24,6 @@ Blocos `a,b,c,d` têm comprimentos `1,1,2,3`. A mesa tem seis slots `0..5`, deli
 
 O destino exige apenas seu **span local livre**, pois exigir o apoio inteiro livre impossibilitaria `a` e `b` lado a lado sobre `c`. O exemplo do manual que leva `a` à mesa no ponto 4 e depois `d` à mesa no ponto 2 colide; a solução corrigida coloca `a` temporariamente sobre `b` no ponto 5. Essas escolhas afetam o domínio e a minimalidade informada.
 
-## Resolução Manual
-
 # Resolução Manual: Mundo dos Blocos de Tamanho Variável
 
 ## Notação
